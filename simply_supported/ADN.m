@@ -1,0 +1,20 @@
+syms xi1 xi2 n1 n2 mu lambda tau k theta
+L = [(xi1^2 + xi2^2)^2 0 xi1 * (xi1^2 + xi2^2); 0 (xi1^2 + xi2^2)^2 xi2 * (xi1^2 + xi2^2); xi1 xi2 0];
+B = [1 0 0; 0 1 0; (n1 * xi1 + n1 * xi1 + n2 * xi2) * (n1 * xi1 + n2 * xi2) n2 * xi1 * (n1 * xi1 + n2 * xi2) lambda / (lambda + mu) * n1 * (n1 * xi1 + n2 * xi2); n1 * xi2 * (n1 * xi1 + n2 * xi2) (n2 * xi2 + n1 * xi1 + n2 * xi2) * (n1 * xi1 + n2 * xi2) lambda / (lambda + mu) * n2 * (n1 * xi1 + n2 * xi2)];
+C = B * adjoint(L);
+%F = subs(C, {xi1, xi2, n1, n2}, {tau, k, 1, 0});
+F = simplify(subs(C, {xi1, xi2, n1, n2}, {tau * cos(theta) - sin(theta) * k, cos(theta) * k + tau * sin(theta), cos(theta), sin(theta)}));
+F(:, [1, 2]) = F(:, [1, 2]) / (k^2 + tau^2);
+F(:, 3) = F(:, 3) / (k^2 + tau^2)^3;
+F = simplify(F);
+dF = diff(F, tau);
+ddF = diff(dF, tau);
+F = subs(F, tau, k*1i);
+F(:, [1, 2]) = F(:, [1, 2]) / k^2 / (cos(2*theta) + sin(2*theta) * 1i);
+F(:, 3) = F(:, 3) / k / (cos(theta) + sin(theta) * 1i);
+F = simplify(F);
+dF = subs(dF, tau, k*1i);
+dF(:, [1, 2]) = dF(:, [1, 2]) / k / (cos(theta) + sin(theta) * 1i);
+dF = simplify(dF);
+ddF = simplify(subs(ddF, tau, k*1i));
+A = [F(:, 1), dF(:, 1), ddF(:, [1, 2])];

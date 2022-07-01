@@ -1,0 +1,52 @@
+function  [phi, phix, phiy, phixx, phixy, phiyy, T] = init_fespace
+syms lambda1 lambda2 lambda3 x1 x2 x3 y1 y2 y3 sgn1 sgn2 sgn3
+xi1 = x2 - x3;
+xi2 = x3 - x1;
+xi3 = x1 - x2;
+eta1 = y2 - y3;
+eta2 = y3 - y1;
+eta3 = y1 - y2;
+inner11 = eta1^2 + xi1^2;
+inner12 = eta1 * eta2 + xi1 * xi2;
+inner13 = eta1 * eta3 + xi1 * xi3;
+inner22 = eta2^2 + xi2^2;
+inner23 = eta2 * eta3 + xi2 * xi3;
+inner33 = eta3^2 + xi3^2;
+T2 = det([1, x1, y1; 1, x2, y2; 1, x3, y3]);
+bK = lambda1 * lambda2 * lambda3;
+phi7 = 6 * bK * (2 * lambda1 - 1);
+phi8 = 6 * bK * (2 * lambda2 - 1);
+phi9 = 6 * bK * (2 * lambda3 - 1);
+phi = [
+    lambda1 * (2 * lambda1 - 1) - phi7 + inner12 / inner22 * phi8 + inner13 / inner33 * phi9;
+    lambda2 * (2 * lambda2 - 1) + inner12 / inner11 * phi7 - phi8 + inner23 / inner33 * phi9;
+    lambda3 * (2 * lambda3 - 1) + inner13 / inner11 * phi7 + inner23 / inner22 * phi8 - phi9;
+    4 * lambda2 * lambda3 + 12 * bK * (1 - 4 * lambda1);
+    4 * lambda3 * lambda1 + 12 * bK * (1 - 4 * lambda2);
+    4 * lambda1 * lambda2 + 12 * bK * (1 - 4 * lambda3);
+    sgn1 * T2 / inner11^(1/2) * phi7;
+    sgn2 * T2 / inner22^(1/2) * phi8;
+    sgn3 * T2 / inner33^(1/2) * phi9;
+];
+lambda1x = eta1 / T2;
+lambda2x = eta2 / T2;
+lambda3x = eta3 / T2;
+lambda1y = -xi1 / T2;
+lambda2y = -xi2 / T2;
+lambda3y = -xi3 / T2;
+phi2(1: 2: 18, 1) = phi;
+phi2(2: 2: 18, 2) = phi;
+phi = simplify(phi2);
+phix = lambda1x * diff(phi, lambda1) + lambda2x * diff(phi, lambda2) + lambda3x * diff(phi, lambda3);
+phiy = lambda1y * diff(phi, lambda1) + lambda2y * diff(phi, lambda2) + lambda3y * diff(phi, lambda3);
+phixx = lambda1x * diff(phix, lambda1) + lambda2x * diff(phix, lambda2) + lambda3x * diff(phix, lambda3);
+phixy = lambda1y * diff(phix, lambda1) + lambda2y * diff(phix, lambda2) + lambda3y * diff(phix, lambda3);
+phiyy = lambda1y * diff(phiy, lambda1) + lambda2y * diff(phiy, lambda2) + lambda3y * diff(phiy, lambda3);
+phi = matlabFunction(simplify(phi));
+phix = matlabFunction(simplify(phix));
+phiy = matlabFunction(simplify(phiy));
+phixx = matlabFunction(simplify(phixx));
+phixy = matlabFunction(simplify(phixy));
+phiyy = matlabFunction(simplify(phiyy));
+T = matlabFunction(simplify(T2 / 2));
+end
